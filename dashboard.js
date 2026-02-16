@@ -1,10 +1,10 @@
 /* ============================================================
    لوحة التحكم – Thamer SaaS
-   متوافق مع النظام الموحد (JWT + RLS)
    ============================================================ */
 
-const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+const SUPABASE_URL = "https://aesmaafngzsztroqycto.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlc21hYWZuZ3pzenRyb3F5Y3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTkxNTYsImV4cCI6MjA4NTg3NTE1Nn0.SQUx6nigie9kyHL7PtqeQNzXQEr4hKMCWmRT5CSQaBU"; 
+// ⬆️ انسخ المفتاح مباشرة من Supabase Settings → API
 
 const token = localStorage.getItem("token");
 const role = localStorage.getItem("role");
@@ -30,31 +30,30 @@ async function loadDashboard() {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
-          "apikey": SUPABASE_ANON_KEY
+          "apikey": SUPABASE_ANON_KEY,
+          "Content-Type": "application/json"
         }
       }
     );
 
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
     const data = await res.json();
 
-    // الإحصائيات
-    document.getElementById("totalOrders").innerHTML = `
-      إجمالي الطلبات<br>${data.total_orders || 0}
-    `;
+    document.getElementById("totalOrders").innerHTML =
+      `إجمالي الطلبات<br>${data.total_orders || 0}`;
 
-    document.getElementById("totalCustomers").innerHTML = `
-      إجمالي العملاء<br>${data.total_customers || 0}
-    `;
+    document.getElementById("totalCustomers").innerHTML =
+      `إجمالي العملاء<br>${data.total_customers || 0}`;
 
-    document.getElementById("totalRevenue").innerHTML = `
-      إجمالي المبيعات<br>${data.total_revenue || 0} ريال
-    `;
+    document.getElementById("totalRevenue").innerHTML =
+      `إجمالي المبيعات<br>${data.total_revenue || 0} ريال`;
 
-    document.getElementById("todayOrders").innerHTML = `
-      طلبات اليوم<br>${data.today_orders || 0}
-    `;
+    document.getElementById("todayOrders").innerHTML =
+      `طلبات اليوم<br>${data.today_orders || 0}`;
 
-    // آخر 5 طلبات
     document.getElementById("latestOrders").innerHTML =
       (data.latest_orders || [])
         .map(o => `
@@ -64,7 +63,6 @@ async function loadDashboard() {
         `)
         .join("");
 
-    // آخر 5 عملاء
     document.getElementById("latestCustomers").innerHTML =
       (data.latest_customers || [])
         .map(c => `
@@ -78,9 +76,5 @@ async function loadDashboard() {
     console.error("خطأ في تحميل الداشبورد:", err);
   }
 }
-
-/* ============================================================
-   تشغيل الصفحة
-   ============================================================ */
 
 loadDashboard();
