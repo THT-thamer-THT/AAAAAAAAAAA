@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>الطلبات</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h2>الطلبات</h2>
+
+  <div class="filters">
+    <input id="searchInput" type="text" placeholder="ابحث عن طلب...">
+
+    <select id="sortSelect">
+      <option value="created_desc">الأحدث أولًا</option>
+      <option value="created_asc">الأقدم أولًا</option>
+      <option value="price_desc">السعر الأعلى</option>
+      <option value="price_asc">السعر الأقل</option>
+      <option value="status">حسب الحالة</option>
+    </select>
+
+    <select id="statusFilter">
+      <option value="">كل الحالات</option>
+      <option value="pending">قيد الانتظار</option>
+      <option value="processing">قيد التجهيز</option>
+      <option value="completed">مكتمل</option>
+      <option value="canceled">ملغي</option>
+    </select>
+  </div>
+
+  <div id="ordersList"></div>
+
+  <script src="orders.js"></script>
+
+<!-- تفاصيل الطلب - Side Panel -->
+<div id="orderDetailsPanel" class="side-panel">
+  <div class="panel-header">
+    <h3>تفاصيل الطلب</h3>
+    <button class="close-btn" onclick="closeOrderDetails()">×</button>
+  </div>
+
+  <div class="panel-content">
+    <div id="orderDetailsContent"></div>
+  </div>
+</div>
+
+<div id="panelOverlay" class="overlay" onclick="closeOrderDetails()"></div>
+</body>
+</html>

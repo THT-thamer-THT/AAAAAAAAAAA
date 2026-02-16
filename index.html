@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>منصة الفوترة السحابية</title>
+
+  <!-- ربط ملف التنسيقات -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- ربط ملفات الجافاسكربت -->
+  <script src="storage.js" defer></script>
+  <script src="main.js" defer></script>
+  <script src="files.js" defer></script>
+  <script src="subscriptions.js" defer></script>
+  <script src="products.js" defer></script>
+  <script src="merchant.js" defer></script>
+  <script src="admin.js" defer></script>
+</head>
+
+<body>
+
+  <!-- شاشة تسجيل الدخول -->
+  <div id="loginScreen" class="view">
+    <div class="card">
+      <h2>تسجيل الدخول</h2>
+      <p>ادخل إلى منصة الفوترة السحابية.</p>
+
+      <div class="field">
+        <label for="loginEmail">البريد الإلكتروني</label>
+        <input id="loginEmail" type="text" placeholder="example@domain.com" />
+      </div>
+
+      <div class="field">
+        <label for="loginPassword">كلمة المرور</label>
+        <input id="loginPassword" type="password" placeholder="••••••••" />
+      </div>
+
+      <div class="error" id="loginError"></div>
+
+      <button class="primary-btn" onclick="login()">دخول</button>
+
+      <button class="link-btn" onclick="switchView('adminLoginScreen')">
+        دخول الأدمن
+      </button>
+
+      <div class="switch-link">
+        ليس لديك حساب؟
+        <button class="link-btn" onclick="switchView('registerScreen')">إنشاء حساب تاجر</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- شاشة تسجيل الدخول الادمن -->
+  <div id="adminLoginScreen" class="view" style="display:none;">
+    <div class="card">
+      <h2>تسجيل دخول الأدمن</h2>
+
+      <div class="field">
+        <label>البريد الإلكتروني</label>
+        <input id="adminEmail" type="email">
+      </div>
+
+      <div class="field">
+        <label>كلمة المرور</label>
+        <input id="adminPassword" type="password">
+      </div>
+
+      <button class="primary-btn" onclick="adminLogin()">تسجيل الدخول</button>
+
+      <button class="link-btn" onclick="switchView('loginScreen')">العودة</button>
+    </div>
+  </div>
+
+  <!-- شاشة تسجيل تاجر -->
+  <div id="registerScreen" class="view" style="display:none;">
+    <div class="card">
+      <h2>إنشاء حساب تاجر</h2>
+      <p>سجّل متجرك وابدأ باستخدام المنصة.</p>
+
+      <div class="field">
+        <label for="regStoreName">اسم المتجر</label>
+        <input id="regStoreName" type="text" placeholder="مثال: متجر ثامر" />
+      </div>
+
+      <div class="field">
+        <label for="regEmail">البريد الإلكتروني</label>
+        <input id="regEmail" type="text" placeholder="example@domain.com" />
+      </div>
+
+      <div class="field">
+        <label for="regPassword">كلمة المرور</label>
+        <input id="regPassword" type="password" placeholder="••••••••" />
+      </div>
+
+      <div class="error" id="regError"></div>
+
+      <button class="primary-btn" onclick="registerMerchant()">إنشاء الحساب</button>
+
+      <div class="switch-link">
+        لديك حساب؟
+        <button class="link-btn" onclick="switchView('loginScreen')">العودة لتسجيل الدخول</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- لوحة الأدمن -->
+  <div id="adminDashboard" class="dashboard" style="display:none;">
+
+    <aside class="sidebar">
+      <div class="logo">لوحة الأدمن</div>
+
+      <button id="navMerchants" class="active" onclick="switchDashboardView('dashboardMerchants')">التجار</button>
+      <button id="navInvoices" onclick="switchDashboardView('dashboardInvoices')">الفواتير</button>
+      <button id="navProducts" onclick="switchDashboardView('dashboardProducts')">منتجات التجار</button>
+      <button id="navSubscriptions" onclick="switchDashboardView('dashboardSubscriptions')">الاشتراكات</button>
+      <button id="navSettings" onclick="switchDashboardView('dashboardSettings')">الإعدادات</button>
+      <button onclick="switchDashboardView('adminPaymentSettings')">إعدادات HyperPay</button>
+
+      <button onclick="logout()">تسجيل الخروج</button>
+    </aside>
+
+    <header class="header">
+      <div>
+        <div class="title">لوحة التحكم / الأدمن</div>
+        <div class="badge">إدارة التجار والفواتير والاشتراكات</div>
+      </div>
+      <div class="user">
+        <span>أدمن رئيسي</span>
+        <div class="avatar" id="adminAvatar">A</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- إعدادات HyperPay -->
+      <section id="adminPaymentSettings" class="section" style="display:none;">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h3>إعدادات HyperPay</h3>
+          </div>
+
+          <div class="field">
+            <label>Entity ID</label>
+            <input id="hpEntityId" type="text">
+          </div>
+
+          <div class="field">
+            <label>Access Token</label>
+            <input id="hpAccessToken" type="text">
+          </div>
+
+          <div class="field">
+            <label>Secret Key</label>
+            <input id="hpSecretKey" type="text">
+          </div>
+
+          <div class="field">
+            <label>وضع التشغيل</label>
+            <select id="hpMode">
+              <option value="test">وضع الاختبار (Test)</option>
+              <option value="live">وضع الإنتاج (Live)</option>
+            </select>
+          </div>
+
+          <button class="primary-btn" onclick="savePaymentSettings()">حفظ الإعدادات</button>
+        </div>
+      </section>
+
+      <!-- قسم التجار -->
+      <section id="dashboardMerchants" class="section active">
+        <h3>إدارة التجار</h3>
+        <div id="merchantsTableContainer"></div>
+      </section>
+
+      <!-- قسم الفواتير -->
+      <section id="dashboardInvoices" class="section">
+        <h3>الفواتير</h3>
+        <div id="invoicesTableContainer"></div>
+      </section>
+
+      <!-- قسم الاشتراكات -->
+      <section id="dashboardSubscriptions" class="section">
+        <h3>إدارة الاشتراكات</h3>
+        <div id="subscriptionsContainer"></div>
+      </section>
+
+      <!-- قسم الإعدادات -->
+      <section id="dashboardSettings" class="section">
+        <h3>إعدادات النظام</h3>
+        <div id="settingsContainer"></div>
+      </section>
+
+      <!-- قسم منتجات التجار -->
+      <section id="dashboardProducts" class="section">
+        <h3>منتجات التجار</h3>
+        <div id="adminProductsContainer"></div>
+      </section>
+
+    </main>
+  </div>
+
+<!-- لوحة التاجر -->
+<div id="merchantDashboard" class="merchant-layout" style="display:none;">
+
+  <aside class="merchant-sidebar">
+    <button onclick="switchMerchantView('merchantOverview')">نظرة عامة</button>
+    <button onclick="switchMerchantView('merchantProducts')">المنتجات</button>
+    <button onclick="switchMerchantView('merchantInvoices')">الفواتير</button>
+    <button onclick="switchMerchantView('merchantCustomers')">العملاء</button>
+    <button onclick="openMerchantSettings()">إعدادات المتجر</button>
+    <button onclick="switchMerchantView('merchantFiles')">رفع الملفات</button>
+    <button onclick="switchMerchantView('merchantSubscription')">الاشتراك</button>
+    <button onclick="switchMerchantView('merchantCreatePaymentLink')">إنشاء رابط دفع</button>
+    <button onclick="switchMerchantView('merchantPaymentLinks')">روابط الدفع</button>
+  </aside>
+
+  <div class="merchant-main">
+
+    <!-- صفحة إنشاء رابط دفع -->
+    <div id="merchantCreatePaymentLink" class="merchant-section" style="display:none;">
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>إنشاء رابط دفع</h3>
+        </div>
+
+        <div class="field">
+          <label>المبلغ (رس)</label>
+          <input id="payAmount" type="number" placeholder="مثال: 150">
+        </div>
+
+        <div class="field">
+          <label>وصف الدفع</label>
+          <input id="payDescription" type="text" placeholder="مثال: دفعة لطلب رقم 123">
+        </div>
+
+        <div class="field">
+          <label>طريقة الدفع</label>
+          <select id="payMethod">
+            <option value="online">دفع أونلاين (HyperPay)</option>
+            <option value="cash">دفع كاش</option>
+          </select>
+        </div>
+
+        <button class="primary-btn" onclick="createPaymentLink()">إنشاء رابط الدفع</button>
+      </div>
+    </div>
+
+    <!-- صفحة روابط الدفع -->
+    <div id="merchantPaymentLinks" class="merchant-section" style="display:none;">
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>روابط الدفع</h3>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>رقم الرابط</th>
+              <th>المبلغ</th>
+              <th>الطريقة</th>
+              <th>الحالة</th>
+              <th>عرض</th>
+            </tr>
+          </thead>
+          <tbody id="paymentLinksTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- الهيدر -->
+    <div class="merchant-header">
+      <div>
+        <span>لوحة التاجر</span> · 
+        <span id="merchantStoreName">متجر</span>
+      </div>
+      <div>
+        <span class="top-bar-link" onclick="logout()">تسجيل الخروج</span>
+      </div>
+    </div>
+
+    <!-- نظرة عامة -->
+    <div id="merchantOverview" class="merchant-section"></div>
+
+    <!-- المنتجات -->
+    <div id="merchantProducts" class="merchant-section" style="display:none;">
+      <h2>المنتجات</h2>
+
+      <button class="primary-btn" onclick="openAddProduct()">+ إضافة منتج</button>
+
+      <input 
+        id="productSearch" 
+        type="text" 
+        placeholder="ابحث عن منتج..." 
+        oninput="renderMerchantProducts(currentMerchant.id)"
+        style="padding: 8px; width: 100%; max-width: 300px; margin: 15px 0; border-radius: 6px; border: 1px solid #ccc;"
+      >
+
+      <select id="productSort" onchange="renderMerchantProducts(currentMerchant.id)" style="margin: 15px 0; padding: 8px;">
+        <option value="newest">الأحدث أولاً</option>
+        <option value="oldest">الأقدم أولاً</option>
+        <option value="priceLow">السعر: الأقل → الأعلى</option>
+        <option value="priceHigh">السعر: الأعلى → الأقل</option>
+      </select>
+
+      <h3 id="productCount" style="margin-top: 10px;"></h3>
+
+      <div id="productsList"></div>
+    </div>
+
+    <!-- القوائم -->
+    <div id="merchantLists" class="merchant-section" style="display:none;">
+      <h3>القوائم المخصصة</h3>
+      <p>يمكنك إنشاء قوائم خاصة بك وإضافة المنتجات إليها.</p>
+      <div id="listsGrid" class="lists-grid"></div>
+    </div>
+
+    <!-- العروض -->
+    <div id="merchantOffers" class="merchant-section" style="display:none;">
+      <h3>العروض</h3>
+      <p>يمكنك إنشاء عروض خاصة تضم عدة منتجات بسعر واحد.</p>
+
+      <button class="primary-btn" onclick="openCreateOffer()" style="margin-bottom:15px;">
+        + إنشاء عرض جديد
+      </button>
+
+      <div id="offersGrid" class="offers-grid"></div>
+    </div>
+
+    <!-- الكوبونات -->
+    <div id="merchantCoupons" class="merchant-section" style="display:none;">
+      <h3>الكوبونات</h3>
+      <p>يمكنك إنشاء كوبونات خصم لعملائك.</p>
+
+      <button class="primary-btn" onclick="openCreateCoupon()" style="margin-bottom:15px;">
+        + إنشاء كوبون جديد
+      </button>
+
+      <div id="couponsGrid" class="coupons-grid"></div>
+    </div>
+
+    <!-- تفاصيل كوبون -->
+    <div id="merchantCouponView" class="merchant-section" style="display:none;">
+      <h3 id="couponViewCode"></h3>
+
+      <p id="couponViewType" style="font-size:14px; color:#374151;"></p>
+      <p id="couponViewValue" style="font-size:14px; color:#374151;"></p>
+      <p id="couponViewExpires" style="font-size:14px; color:#374151;"></p>
+      <p id="couponViewStatus" style="font-size:14px; color:#374151;"></p>
+
+      <button class="primary-btn" id="toggleCouponBtn" style="margin-bottom:15px;"></button>
+
+      <button class="primary-btn" onclick="switchMerchantView('merchantCoupons')" style="background:#6b7280;">
+        ← رجوع للكوبونات
+      </button>
+    </div>
+
+    <!-- الطلبات -->
+    <div id="merchantOrders" class="merchant-section" style="display:none;">
+      <h3>الطلبات</h3>
+      <p>جميع الطلبات التي استلمها متجرك.</p>
+      <div id="ordersGrid" class="orders-grid"></div>
+    </div>
+
+    <!-- العملاء -->
+    <div id="merchantCustomers" class="merchant-section" style="display:none;">
+      <h3>العملاء</h3>
+
+      <button class="primary-btn" onclick="openAddCustomer()" style="margin-bottom:15px;">
+        + إضافة عميل
+      </button>
+
+      <input 
+        id="customerSearch" 
+        type="text" 
+        placeholder="ابحث بالاسم أو رقم الجوال..." 
+        oninput="renderMerchantCustomers()"
+        style="padding: 8px; width: 100%; max-width: 300px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc;"
+      >
+
+      <select id="customerSort" onchange="renderMerchantCustomers()" style="padding: 8px; margin-bottom: 10px;">
+        <option value="newest">الأحدث تسجيلًا</option>
+        <option value="oldest">الأقدم تسجيلًا</option>
+        <option value="ordersHigh">أكثر طلبات</option>
+        <option value="ordersLow">أقل طلبات</option>
+        <option value="spentHigh">أعلى إنفاق</option>
+        <option value="spentLow">أقل إنفاق</option>
+      </select>
+
+      <h4 id="customerCount" style="margin: 10px 0;"></h4>
+
+      <div id="customersGrid" class="grid"></div>
+    </div>
+
+    <!-- تفاصيل العميل -->
+    <div id="merchantCustomerView" class="merchant-section" style="display:none;">
+      <h3>تفاصيل العميل</h3>
+
+      <p id="customerViewName"></p>
+      <p id="customerViewPhone"></p>
+      <p id="customerViewEmail"></p>
+      <p id="customerViewCreated"></p>
+      <p id="customerViewOrders"></p>
+      <p id="customerViewSpent"></p>
+      <p id="customerViewLastOrder"></p>
+
+      <h3 style="margin-top:25px;">تحليل العميل</h3>
+
+      <div id="customerAnalytics" class="analytics-box">
+        <p id="analyticsTotalSpent"></p>
+        <p id="analyticsTotalOrders"></p>
+        <p id="analyticsAvgOrder"></p>
+        <p id="analyticsTopProduct"></p>
+
+        <h4 style="margin-top:15px;">آخر 5 طلبات</h4>
+        <div id="analyticsLastOrders"></div>
+
+        <h4 style="margin-top:15px;">مخطط بسيط للإنفاق</h4>
+        <pre id="analyticsChart" style="background:#f3f4f6; padding:10px; border-radius:6px;"></pre>
+      </div>
+
+      <h3 style="margin-top:25px;">عناوين العميل</h3>
+
+      <button class="primary-btn" onclick="openAddAddress()" style="margin-bottom:10px;">
+        + إضافة عنوان
+      </button>
+
+      <div id="customerAddresses"></div>
+
+      <h3 style="margin-top:25px;">سجل التواصل</h3>
+
+      <button class="primary-btn" onclick="openSendMessage()" style="margin-bottom:10px;">
+        + إرسال رسالة
+      </button>
+
+      <div id="customerMessages"></div>
+
+      <h3 style="margin-top:25px;">سجل النشاط</h3>
+      <div id="customerActivity"></div>
+
+      <h3 style="margin-top:25px;">تذاكر الدعم</h3>
+
+      <button class="primary-btn" onclick="openAddTicket()" style="margin-bottom:10px;">
+        + فتح تذكرة جديدة
+      </button>
+
+      <div id="customerTickets"></div>
+
+<!-- ملاحظات العميل -->
+      <h3 style="margin-top:25px;">ملاحظات العميل</h3>
+
+      <button class="primary-btn" onclick="openAddNote()" style="margin-bottom:10px;">
+        + إضافة ملاحظة
+      </button>
+
+      <div id="customerNotes"></div>
+
+      <!-- طلبات العميل -->
+      <h3 style="margin-top:25px;">طلبات العميل</h3>
+      <div id="customerOrdersGrid" class="grid"></div>
+
+      <button class="primary-btn" onclick="switchMerchantView('merchantCustomers')" style="margin-top:20px; background:#6b7280;">
+        ← رجوع للعملاء
+      </button>
+    </div>
+
+    <!-- تفاصيل طلب -->
+    <div id="merchantOrderView" class="merchant-section" style="display:none;">
+      <h3 id="orderViewId"></h3>
+
+      <p id="orderViewDate" style="font-size:14px; color:#374151;"></p>
+      <p id="orderViewPayment" style="font-size:14px; color:#374151;"></p>
+      <p id="orderViewSubtotal" style="font-size:14px; color:#374151;"></p>
+      <p id="orderViewDiscount" style="font-size:14px; color:#374151;"></p>
+      <p id="orderViewTotal" style="font-size:14px; color:#374151;"></p>
+      <p id="orderViewCoupon" style="font-size:14px; color:#374151;"></p>
+      <p id="orderViewStatus" style="font-size:14px; color:#374151;"></p>
+
+      <h4 style="margin-top:20px;">المنتجات داخل الطلب</h4>
+      <div id="orderItemsGrid" class="products-grid"></div>
+
+      <h4 style="margin-top:20px;">تغيير حالة الطلب</h4>
+      <select id="orderStatusSelect" onchange="updateOrderStatus()">
+        <option value="pending">قيد الانتظار</option>
+        <option value="processing">قيد المعالجة</option>
+        <option value="completed">مكتمل</option>
+        <option value="canceled">ملغي</option>
+      </select>
+
+      <button class="primary-btn" onclick="switchMerchantView('merchantOrders')" style="margin-top:20px; background:#6b7280;">
+        ← رجوع للطلبات
+      </button>
+    </div>
+
+    <!-- تفاصيل عرض -->
+    <div id="merchantOfferView" class="merchant-section" style="display:none;">
+      <h3 id="offerViewTitle"></h3>
+      <p id="offerViewPrice" style="font-size:14px; color:#374151;"></p>
+
+      <button class="primary-btn" onclick="switchMerchantView('merchantOffers')" style="margin-bottom:15px;">
+        ← رجوع للعروض
+      </button>
+
+      <div id="offerProductsGrid" class="products-grid"></div>
+    </div>
+
+    <!-- تفاصيل قائمة -->
+    <div id="merchantListView" class="merchant-section" style="display:none;">
+      <h3 id="listViewTitle"></h3>
+
+      <button class="primary-btn" onclick="switchMerchantView('merchantLists')" style="margin-bottom:15px;">
+        ← رجوع للقوائم
+      </button>
+
+      <div id="listProductsGrid" class="products-grid"></div>
+    </div>
+
+    <!-- نموذج إضافة / تعديل منتج -->
+    <h3>إضافة / تعديل منتج</h3>
+    <div id="merchantProductForm" style="display:none;"></div>
+
+    <!-- رفع الملفات -->
+    <h3>رفع الملفات</h3>
+    <div id="merchantFiles"></div>
+
+    <!-- اشتراك المتجر -->
+    <h3>اشتراك المتجر</h3>
+    <div id="merchantSubscription"></div>
+
+  </div> <!-- نهاية merchant-main -->
+</div> <!-- نهاية merchantDashboard -->
+
+<!-- صفحة الدفع للعميل -->
+<div id="paymentPage" style="display:none; padding:20px; max-width:600px; margin:auto;">
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3>صفحة الدفع</h3>
+    </div>
+
+    <p><strong>المتجر:</strong> <span id="payStoreName"></span></p>
+    <p><strong>المبلغ:</strong> <span id="payAmountDisplay"></span> رس</p>
+    <p><strong>الوصف:</strong> <span id="payDescriptionDisplay"></span></p>
+    <p><strong>الحالة:</strong> <span id="payStatusDisplay"></span></p>
+
+    <div id="onlinePaySection" style="display:none; margin-top:20px;">
+      <button class="primary-btn" onclick="startOnlinePayment()">ادفع الآن</button>
+    </div>
+
+    <div id="cashPaySection" style="display:none; margin-top:20px;">
+      <p>الرجاء الدفع كاش عند الاستلام.</p>
+      <button class="primary-btn" id="cashConfirmBtn">تأكيد الدفع</button>
+    </div>
+
+    <button class="secondary-btn" onclick="goBackToMerchant()">رجوع</button>
+  </div>
+</div>
+
+<!-- مودال إضافة منتج -->
+<div id="addProductModal" class="modal" style="display:none;">
+  <h3>إضافة منتج</h3>
+
+  <input id="prodName" placeholder="اسم المنتج">
+  <input id="prodPrice" placeholder="السعر" type="number">
+  <textarea id="prodDesc" placeholder="الوصف"></textarea>
+  <input id="prodImage" type="file" accept="image/*">
+
+  <button onclick="handleProductSave()">حفظ</button>
+  <button onclick="closeAddProduct()">إلغاء</button>
+</div>
+
+<!-- مودال اختيار قائمة -->
+<div id="addToListModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>إضافة المنتج إلى قائمة</h3>
+
+    <div id="listContainer">
+      <p style="font-size: 14px; color: #6b7280;">لا توجد قوائم حالياً</p>
+    </div>
+
+    <button class="primary-btn" onclick="createNewList()">إنشاء قائمة جديدة</button>
+    <button class="close-btn" onclick="closeAddToList()">إلغاء</button>
+  </div>
+</div>
+
+<!-- مودال إنشاء عرض -->
+<div id="createOfferModal" class="modal" style="display:none;">
+  <div class="modal-content" style="text-align:right;">
+    <h3>إنشاء عرض جديد</h3>
+
+    <div class="field">
+      <label>اسم العرض</label>
+      <input id="offerName" type="text" placeholder="مثال: عرض نهاية الأسبوع">
+    </div>
+
+    <div class="field">
+      <label>سعر العرض</label>
+      <input id="offerPrice" type="number" placeholder="مثال: 99">
+    </div>
+
+    <h4 style="margin-top:15px;">اختر المنتجات</h4>
+    <div id="offerProductsList" style="max-height:200px; overflow:auto; margin-top:10px;"></div>
+
+    <button class="primary-btn" onclick="saveNewOffer()" style="margin-top:15px;">حفظ العرض</button>
+    <button class="close-btn" onclick="closeCreateOffer()">إلغاء</button>
+  </div>
+</div>
+
+<!-- مودال إنشاء كوبون -->
+<div id="createCouponModal" class="modal" style="display:none;">
+  <div class="modal-content" style="text-align:right;">
+    <h3>إنشاء كوبون جديد</h3>
+
+    <div class="field">
+      <label>كود الكوبون</label>
+      <input id="couponCode" type="text" placeholder="مثال: SALE20">
+    </div>
+
+    <div class="field">
+      <label>نوع الخصم</label>
+      <select id="couponType">
+        <option value="percent">خصم نسبة (%)</option>
+        <option value="fixed">خصم مبلغ ثابت</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>قيمة الخصم</label>
+      <input id="couponValue" type="number" placeholder="مثال: 20">
+    </div>
+
+    <div class="field">
+      <label>تاريخ الانتهاء</label>
+      <input id="couponExpires" type="date">
+    </div>
+
+    <div class="field">
+      <label>الحالة</label>
+      <select id="couponActive">
+        <option value="true">مفعل</option>
+        <option value="false">غير مفعل</option>
+      </select>
+    </div>
+
+    <button class="primary-btn" onclick="saveNewCoupon()" style="margin-top:15px;">حفظ الكوبون</button>
+    <button class="close-btn" onclick="closeCreateCoupon()">إلغاء</button>
+  </div>
+</div>
+
+<!-- مودال إضافة عميل -->
+<div id="addCustomerModal" class="modal" style="display:none;">
+  <div class="modal-content" style="text-align:right;">
+    <h3>إضافة عميل جديد</h3>
+
+    <div class="field">
+      <label>اسم العميل</label>
+      <input id="newCustomerName" type="text" placeholder="مثال: محمد العتيبي">
+    </div>
+
+    <div class="field">
+      <label>رقم الجوال</label>
+      <input id="newCustomerPhone" type="text" placeholder="05xxxxxxxx">
+    </div>
+
+    <div class="field">
+      <label>البريد الإلكتروني (اختياري)</label>
+      <input id="newCustomerEmail" type="text" placeholder="example@mail.com">
+    </div>
+
+    <button class="primary-btn" onclick="saveNewCustomer()" style="margin-top:15px;">حفظ العميل</button>
+    <button class="close-btn" onclick="closeAddCustomer()">إلغاء</button>
+  </div>
+</div>
+
+<!-- مودال إضافة ملاحظة -->
+<div id="addNoteModal" class="modal" style="display:none;">
+  <div class="modal-content" style="text-align:right;">
+    <h3>إضافة ملاحظة</h3>
+
+    <textarea id="noteText" placeholder="اكتب الملاحظة هنا..." style="width:100%; height:120px;"></textarea>
+
+    <button class="primary-btn" onclick="saveCustomerNote()" style="margin-top:15px;">حفظ الملاحظة</button>
+    <button class="close-btn" onclick="closeAddNote()">إلغاء</button>
+  </div>
+</div>
+
+<!-- مودال إضافة عنوان -->
+<div id="addAddressModal" class="modal" style="display:none;">
+  <div class="modal-content" style="text-align:right;">
+    <h3>إضافة عنوان</h3>
+
+    <div class="field">
+      <label>المدينة</label>
+      <input id="addressCity" type="text" placeholder="مثال: الرياض">
+    </div>
+
+    <div class="field">
+      <label>الحي</label>
+      <input id="addressDistrict" type="text" placeholder="مثال: الياسمين">
+    </div>
+
+    <div class="field">
+      <label>الشارع</label>
+      <input id="addressStreet" type="text" placeholder="مثال: طريق الملك سلمان">
+    </div>
+
+    <div class="field">
+      <label>الوصف التفصيلي</label>
+      <textarea id="addressDetails" placeholder="مثال: بجانب مسجد، عمارة رقم 12"></textarea>
+    </div>
+
+    <button class="primary-btn" onclick="saveCustomerAddress()" style="margin-top:15px;">حفظ العنوان</button>
+    <button class="close-btn" onclick="closeAddAddress()">إلغاء</button>
+  </div>
+</div>
+
+<!-- مودال عرض الفاتورة -->
+<div id="invoiceView" class="merchant-section" style="display:none; text-align:right;">
+  <h2>فاتورة الطلب</h2>
+
+  <div id="invoiceCustomer"></div>
+  <div id="invoiceAddress"></div>
+  <div id="invoiceItems"></div>
+  <div id="invoiceTotal" style="margin-top:15px; font-size:18px; font-weight:bold;"></div>
+
+  <button class="primary-btn" onclick="window.print()" style="margin-top:20px;">
+    طباعة الفاتورة
+  </button>
+
+  <button class="close-btn" onclick="switchMerchantView('merchantCustomerView')" style="margin-top:10px;">
+    ← رجوع
+  </button>
+</div>
+
+<!-- مودال تذكرة دعم -->
+<div id="addTicketModal" class="modal" style="display:none;">
+  <div class="modal-content" style="text-align:right;">
+    <h3>فتح تذكرة دعم</h3>
+
+    <div class="field">
+      <label>عنوان التذكرة</label>
+      <input id="ticketTitle" type="text" placeholder="مثال: مشكلة في الطلب">
+    </div>
+
+    <div class="field">
+      <label>وصف المشكلة</label>
+      <textarea id="ticketMessage" placeholder="اشرح المشكلة بالتفصيل..." style="height:120px;"></textarea>
+    </div>
+
+    <button class="primary-btn" onclick="saveCustomerTicket()" style="margin-top:15px;">إرسال التذكرة</button>
+    <button class="close-btn" onclick="closeAddTicket()">إلغاء</button>
+  </div>
+</div>
+
+<!-- عرض تذكرة -->
+<div id="ticketView" class="merchant-section" style="display:none; text-align:right;">
+  <h2>تفاصيل التذكرة</h2>
+
+  <div id="ticketDetails"></div>
+
+  <h3>الردود</h3>
+  <div id="ticketReplies"></div>
+
+  <textarea id="ticketReplyInput" placeholder="اكتب ردك..." style="width:100%; height:100px; margin-top:10px;"></textarea>
+  <button class="primary-btn" onclick="addTicketReply()" style="margin-top:10px;">إرسال الرد</button>
+
+  <button class="close-btn" onclick="switchMerchantView('merchantCustomerView')" style="margin-top:20px;">
+    ← رجوع
+  </button>
+</div>
+
+<!-- مودال إرسال رسالة -->
+<div id="sendMessageModal" class="modal" style="display:none;">
+  <div class="modal-content" style="text-align:right;">
+    <h3>إرسال رسالة للعميل</h3>
+
+    <div class="field">
+      <label>نوع الرسالة</label>
+      <select id="messageType">
+        <option value="sms">SMS</option>
+        <option value="email">Email</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>نص الرسالة</label>
+      <textarea id="messageText" placeholder="اكتب الرسالة هنا..." style="height:120px;"></textarea>
+    </div>
+
+    <button class="primary-btn" onclick="saveCustomerMessage()" style="margin-top:15px;">إرسال</button>
+    <button class="close-btn" onclick="closeSendMessage()">إلغاء</button>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>الدفع عبر HyperPay</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      direction: rtl;
+      text-align: center;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>إتمام عملية الدفع</h2>
+    <p>الرجاء الانتظار حتى يتم تحميل نموذج الدفع…</p>
+
+    <!-- نموذج الدفع -->
+    <form action="payment-result.html" class="paymentWidgets" data-brands="VISA MASTER MADA"></form>
+  </div>
+
+  <script>
+    // قراءة checkoutId و mode من الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    const checkoutId = urlParams.get("checkoutId");
+    const mode = urlParams.get("mode");
+
+    // تحديد رابط السكربت حسب وضع التشغيل
+    const scriptUrl =
+      mode === "test"
+        ? `https://eu-test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`
+        : `https://eu-prod.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
+
+    // تحميل سكربت HyperPay
+    const script = document.createElement("script");
+    script.src = scriptUrl;
+    document.body.appendChild(script);
+  </script>
+
+</body>
+</html>

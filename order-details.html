@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تفاصيل الطلب</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h2>تفاصيل الطلب</h2>
+
+  <div id="orderDetails">جاري التحميل...</div>
+
+  <script src="order-details.js"></script>
+
+<h3>تغيير حالة الطلب</h3>
+
+<select id="statusSelect">
+  <option value="pending">قيد الانتظار</option>
+  <option value="processing">قيد التجهيز</option>
+  <option value="completed">مكتمل</option>
+  <option value="canceled">ملغي</option>
+</select>
+
+<button id="updateStatusBtn">تحديث الحالة</button>
+
+<div id="statusMessage"></div>
+
+<hr>
+
+<h3>ملاحظات الطلب</h3>
+
+<div id="notesList">جاري التحميل...</div>
+
+<textarea id="noteInput" placeholder="اكتب ملاحظة..." style="width:100%; height:80px; margin-top:10px;"></textarea>
+
+<button id="addNoteBtn">إضافة الملاحظة</button>
+
+<div id="noteMessage"></div>
+</body>
+</html>

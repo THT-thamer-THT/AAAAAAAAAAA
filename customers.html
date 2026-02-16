@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>العملاء</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h2>العملاء</h2>
+
+  <div class="filters">
+    <input id="searchInput" type="text" placeholder="ابحث عن عميل...">
+
+    <select id="sortSelect">
+      <option value="name_asc">الاسم: أ-ي</option>
+      <option value="name_desc">الاسم: ي-أ</option>
+      <option value="orders_desc">عدد الطلبات: الأعلى</option>
+      <option value="orders_asc">عدد الطلبات: الأقل</option>
+      <option value="spent_desc">المبالغ: الأعلى</option>
+      <option value="spent_asc">المبالغ: الأقل</option>
+    </select>
+  </div>
+
+  <div id="customersList"></div>
+
+  <script src="customers.js"></script>
+</body>
+</html>
