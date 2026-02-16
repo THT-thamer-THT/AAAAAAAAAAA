@@ -107,24 +107,29 @@ button:disabled {
 
 <script>
 /* ============================
-   🔥 CONFIG
+   CONFIG
 ============================ */
 const SUPABASE_URL = "https://aesmaafngzsztroqycto.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlc21hYWZuZ3pzenRyb3F5Y3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTkxNTYsImV4cCI6MjA4NTg3NTE1Nn0.SQUx6nigie9kyHL7PtqeQNzXQEr4hKMCWmRT5CSQaBU";
+const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
 
-/* ============================ */
-
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
+/* ============================
+   SAFE INIT (prevents duplicate)
+============================ */
+if (!window._supabaseClient) {
+  window._supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
     }
-  }
-);
+  );
+}
+
+const supabase = window._supabaseClient;
 
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
@@ -132,7 +137,7 @@ const loginBtn = document.getElementById("loginBtn");
 const message = document.getElementById("message");
 
 /* ============================
-   AUTO REDIRECT IF ALREADY LOGGED
+   AUTO REDIRECT
 ============================ */
 window.addEventListener("DOMContentLoaded", async () => {
   const { data } = await supabase.auth.getSession();
@@ -142,7 +147,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 /* ============================
-   LOGIN HANDLER
+   LOGIN
 ============================ */
 loginBtn.addEventListener("click", async () => {
 
@@ -154,8 +159,7 @@ loginBtn.addEventListener("click", async () => {
   const password = passwordInput.value.trim();
 
   if (!email || !password) {
-    showError("الرجاء إدخال البريد وكلمة المرور");
-    return;
+    return showError("الرجاء إدخال البريد وكلمة المرور");
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -164,15 +168,14 @@ loginBtn.addEventListener("click", async () => {
   });
 
   if (error || !data.session) {
-    showError("بيانات الدخول غير صحيحة");
-    return;
+    return showError("بيانات الدخول غير صحيحة");
   }
 
   await redirectByRole(data.user.id);
 });
 
 /* ============================
-   ROLE RESOLUTION
+   ROLE CHECK
 ============================ */
 async function redirectByRole(userId) {
 
@@ -184,8 +187,7 @@ async function redirectByRole(userId) {
 
   if (error || !roleData) {
     await supabase.auth.signOut();
-    showError("لم يتم العثور على دور المستخدم");
-    return;
+    return showError("لم يتم العثور على دور المستخدم");
   }
 
   if (roleData.role === "admin") {
