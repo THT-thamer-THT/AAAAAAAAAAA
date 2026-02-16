@@ -1,6 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>تسجيل الدخول | Thamer SaaS</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Cairo", sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-box {
+  background: white;
+  width: 380px;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+.login-box h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 14px;
+  color: red;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+  <h2>تسجيل الدخول</h2>
+
+  <div class="input-group">
+    <input type="email" id="email" placeholder="البريد الإلكتروني" />
+  </div>
+
+  <div class="input-group">
+    <input type="password" id="password" placeholder="كلمة المرور" />
+  </div>
+
+  <button id="loginBtn">دخول</button>
+
+  <div class="message" id="message"></div>
+</div>
+
+<!-- Supabase Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+/* ============================
+   🔥 CONFIG
+============================ */
 const SUPABASE_URL = "https://aesmaafngzsztroqycto.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_PUBLIC_ANON_KEY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlc21hYWZuZ3pzenRyb3F5Y3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTkxNTYsImV4cCI6MjA4NTg3NTE1Nn0.SQUx6nigie9kyHL7PtqeQNzXQEr4hKMCWmRT5CSQaBU";
+
+/* ============================ */
 
 const supabase = window.supabase.createClient(
   SUPABASE_URL,
@@ -20,7 +132,7 @@ const loginBtn = document.getElementById("loginBtn");
 const message = document.getElementById("message");
 
 /* ============================
-   AUTO REDIRECT IF LOGGED IN
+   AUTO REDIRECT IF ALREADY LOGGED
 ============================ */
 window.addEventListener("DOMContentLoaded", async () => {
   const { data } = await supabase.auth.getSession();
@@ -33,6 +145,7 @@ window.addEventListener("DOMContentLoaded", async () => {
    LOGIN HANDLER
 ============================ */
 loginBtn.addEventListener("click", async () => {
+
   message.innerHTML = "";
   loginBtn.disabled = true;
   loginBtn.innerText = "جاري الدخول...";
@@ -62,6 +175,7 @@ loginBtn.addEventListener("click", async () => {
    ROLE RESOLUTION
 ============================ */
 async function redirectByRole(userId) {
+
   const { data: roleData, error } = await supabase
     .from("user_roles")
     .select("role")
@@ -76,16 +190,18 @@ async function redirectByRole(userId) {
 
   if (roleData.role === "admin") {
     window.location.href = "dashboard.html";
-  } else if (roleData.role === "merchant") {
+  } 
+  else if (roleData.role === "merchant") {
     window.location.href = "orders.html";
-  } else {
+  } 
+  else {
     await supabase.auth.signOut();
     showError("دور غير معروف");
   }
 }
 
 /* ============================
-   ERROR UI HANDLER
+   ERROR HANDLER
 ============================ */
 function showError(text) {
   message.innerHTML = text;
@@ -93,3 +209,6 @@ function showError(text) {
   loginBtn.innerText = "دخول";
 }
 </script>
+
+</body>
+</html>
