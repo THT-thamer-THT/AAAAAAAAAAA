@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabase = createClient(
   "https://aesmaafngzsztroqycto.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlc21hYWZuZ3pzenRyb3F5Y3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTkxNTYsImV4cCI6MjA4NTg3NTE1Nn0.SQUx6nigie9kyHL7PtqeQNzXQEr4hKMCWmRT5CSQaBU"
+  "ضع_هنا_anon_key_من_لوحة_supabase"
 );
 
 const emailInput = document.getElementById("email");
@@ -19,7 +19,6 @@ loginBtn.addEventListener("click", async () => {
     return;
   }
 
-  // تسجيل الدخول عبر Supabase Auth
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password
@@ -31,30 +30,26 @@ loginBtn.addEventListener("click", async () => {
   }
 
   const session = data.session;
+  const user = data.user;
 
   // حفظ التوكن
   localStorage.setItem("token", session.access_token);
 
-  // جلب بيانات التاجر من جدول merchants
-  const { data: merchant } = await supabase
-    .from("merchants")
-    .select("*")
-    .eq("email", email)
+  // 🔥 جلب الدور من جدول user_roles باستخدام user_id
+  const { data: roleData, error: roleError } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
     .single();
 
-  if (!merchant) {
-    message.innerHTML = "لم يتم العثور على حساب التاجر";
+  if (roleError || !roleData) {
+    message.innerHTML = "لم يتم العثور على دور المستخدم";
     return;
   }
 
-  // حفظ الدور
-  localStorage.setItem("role", merchant.role);
+  localStorage.setItem("role", roleData.role);
 
-  // 🔥 حفظ merchant_id (مهم جدًا)
-  localStorage.setItem("merchant_id", merchant.id);
-
-  // توجيه حسب الدور
-  if (merchant.role === "admin") {
+  if (roleData.role === "admin") {
     window.location.href = "dashboard.html";
   } else {
     window.location.href = "orders.html";
