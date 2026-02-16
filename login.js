@@ -1,6 +1,15 @@
+const SUPABASE_URL = "https://aesmaafngzsztroqycto.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlc21hYWZuZ3pzenRyb3F5Y3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTkxNTYsImV4cCI6MjA4NTg3NTE1Nn0.SQUx6nigie9kyHL7PtqeQNzXQEr4hKMCWmRT5CSQaBU";
+
 const supabase = window.supabase.createClient(
-  "https://aesmaafngzsztroqycto.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlc21hYWZuZ3pzenRyb3F5Y3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTkxNTYsImV4cCI6MjA4NTg3NTE1Nn0.SQUx6nigie9kyHL7PtqeQNzXQEr4hKMCWmRT5CSQaBU"
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true
+    }
+  }
 );
 
 const emailInput = document.getElementById("email");
@@ -8,13 +17,23 @@ const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
 const message = document.getElementById("message");
 
+/* Auto redirect if already logged in */
+window.addEventListener("DOMContentLoaded", async () => {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) {
+    await redirectByRole(data.session.user.id);
+  }
+});
+
 loginBtn.addEventListener("click", async () => {
-  const email = emailInput.value;
-  const password = passwordInput.value;
+
+  message.innerHTML = "";
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
 
   if (!email || !password) {
-    message.innerHTML = "الرجاء إدخال البريد وكلمة المرور";
-    return;
+    return showError("الرجاء إدخال البريد وكلمة المرور");
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -22,34 +41,33 @@ loginBtn.addEventListener("click", async () => {
     password
   });
 
-  if (error) {
-    message.innerHTML = "بيانات الدخول غير صحيحة";
-    return;
+  if (error || !data.session) {
+    return showError("بيانات الدخول غير صحيحة");
   }
 
-  const session = data.session;
-  const user = data.user;
+  await redirectByRole(data.user.id);
+});
 
-  // حفظ التوكن
-  localStorage.setItem("token", session.access_token);
+async function redirectByRole(userId) {
 
-  // 🔥 جلب الدور من جدول user_roles باستخدام user_id
-  const { data: roleData, error: roleError } = await supabase
+  const { data: roleData, error } = await supabase
     .from("user_roles")
     .select("role")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .single();
 
-  if (roleError || !roleData) {
-    message.innerHTML = "لم يتم العثور على دور المستخدم";
-    return;
+  if (error || !roleData) {
+    await supabase.auth.signOut();
+    return showError("لم يتم العثور على دور المستخدم");
   }
-
-  localStorage.setItem("role", roleData.role);
 
   if (roleData.role === "admin") {
     window.location.href = "dashboard.html";
   } else {
     window.location.href = "orders.html";
   }
-});
+}
+
+function showError(text) {
+  message.innerHTML = text;
+}
