@@ -1,29 +1,45 @@
 /* ============================================================
-   لوحة التحكم – Thamer SaaS
-   ============================================================ */
+   لوحة التحكم – Thamer SaaS (Enterprise Version)
+============================================================ */
 
 const SUPABASE_URL = "https://aesmaafngzsztroqycto.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlc21hYWZuZ3pzenRyb3F5Y3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyOTkxNTYsImV4cCI6MjA4NTg3NTE1Nn0.SQUx6nigie9kyHL7PtqeQNzXQEr4hKMCWmRT5CSQaBU"; 
-// ⬆️ انسخ المفتاح مباشرة من Supabase Settings → API
+const SUPABASE_ANON_KEY = "PUT_YOUR_PUBLIC_ANON_KEY_HERE";
 
-const token = localStorage.getItem("token");
-const role = localStorage.getItem("role");
-
-if (!role || !token) {
-  window.location.href = "login.html";
-}
-
-// فقط الأدمن يشوف لوحة التحكم
-if (role !== "admin") {
-  window.location.href = "orders.html";
-}
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true
+    }
+  }
+);
 
 /* ============================================================
-   تحميل بيانات الداشبورد
-   ============================================================ */
+   INIT
+============================================================ */
 
-async function loadDashboard() {
+window.addEventListener("DOMContentLoaded", async () => {
+
+  const { data } = await supabase.auth.getSession();
+
+  if (!data.session) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  await loadDashboard(data.session.access_token);
+});
+
+/* ============================================================
+   LOAD DASHBOARD
+============================================================ */
+
+async function loadDashboard(token) {
+
   try {
+
     const res = await fetch(
       `${SUPABASE_URL}/functions/v1/get_dashboard`,
       {
@@ -35,6 +51,17 @@ async function loadDashboard() {
         }
       }
     );
+
+    if (res.status === 401) {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (res.status === 403) {
+      window.location.href = "orders.html";
+      return;
+    }
 
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -76,5 +103,3 @@ async function loadDashboard() {
     console.error("خطأ في تحميل الداشبورد:", err);
   }
 }
-
-loadDashboard();
